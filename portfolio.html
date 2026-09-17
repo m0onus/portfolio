@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Name — Roblox &amp; Minecraft developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#080B11;
+    --surface:#0D131C;
+    --surface-2:#111A26;
+    --hairline:#1B2431;
+    --hairline-lit:#2B3949;
+    --ink:#E8EEF6;
+    --ink-soft:#A3B0C0;
+    --ink-faint:#6C7A8B;
+    --blue:#58A6FF;
+    --blue-lit:#8CC6FF;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+    --measure:66ch;
+    --gut:clamp(1.5rem,6vw,8rem);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--canvas);color:var(--ink);
+    font:300 1.0625rem/1.65 var(--sans);letter-spacing:.006em;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.locked{overflow:hidden}
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(1100px 620px at 18% -12%,rgba(88,166,255,.10),transparent 70%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 var(--gut)}
+  a{color:var(--blue);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .18s,color .18s}
+  a:hover{color:var(--blue-lit);border-bottom-color:currentColor}
+  a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+  /* ---------- top bar ---------- */
+  .bar{position:sticky;top:0;z-index:5;backdrop-filter:blur(14px);background:rgba(8,11,17,.72);border-bottom:1px solid var(--hairline)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding-top:.95rem;padding-bottom:.95rem}
+  .mark{display:inline-flex;align-items:center;gap:.6rem;font:400 1.0625rem/1 var(--serif);letter-spacing:.02em;color:var(--ink);border:0}
+  .mark svg{width:22px;height:22px;flex:none}
+  .bar nav{display:flex;gap:1.6rem;font-size:.9375rem}
+  .bar nav a{color:var(--ink-soft)}
+  .bar nav a:hover{color:var(--ink)}
+
+  /* ---------- hero ---------- */
+  header.hero{padding:clamp(4rem,12vh,8rem) 0 clamp(3rem,7vh,5rem)}
+  .status{display:inline-flex;align-items:center;gap:.6rem;font-size:.875rem;color:var(--ink-soft);margin:0 0 1.9rem}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px rgba(88,166,255,.14)}
+  h1{font:300 clamp(2.75rem,8.6vw,5.25rem)/1.0 var(--serif);letter-spacing:-.024em;margin:0 0 1.4rem;max-width:22ch}
+  .lede{font-size:clamp(1.0625rem,2.1vw,1.25rem);color:var(--ink-soft);max-width:var(--measure);margin:0 0 2.6rem}
+  .lede em{font-family:var(--serif);font-style:italic;font-size:1.08em;color:var(--ink)}
+
+  /* ---------- current posting card ---------- */
+  .posting{
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 1.5rem;align-items:center;
+    width:100%;text-align:left;cursor:pointer;
+    background:linear-gradient(180deg,rgba(88,166,255,.05),rgba(88,166,255,0)),var(--surface);
+    border:1px solid var(--hairline-lit);border-radius:10px;
+    padding:1.5rem 1.6rem;margin:0 0 2.6rem;color:inherit;font:inherit;
+    transition:border-color .2s,transform .2s,background .2s;
+  }
+  .posting:hover{border-color:rgba(88,166,255,.55);transform:translateY(-2px)}
+  .crest{width:54px;height:54px;flex:none}
+  .posting .who{font:400 1.3125rem/1.25 var(--serif);letter-spacing:-.01em;margin:0 0 .3rem}
+  .posting .where{color:var(--ink-soft);font-size:.9375rem;margin:0}
+  .posting .open{display:inline-flex;align-items:center;gap:.5rem;color:var(--blue);font-size:.875rem;white-space:nowrap}
+  .posting .open svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6}
+
+  /* ---------- activity grid ---------- */
+  .graph{border:1px solid var(--hairline);border-radius:8px;background:var(--surface);padding:1.35rem 1.35rem 1.1rem}
+  .graph-scroll{overflow-x:auto;padding-bottom:.35rem}
+  .graph svg{display:block;height:auto}
+  .cell{fill:#111B27}
+  .cell[data-l="1"]{fill:#14355C}
+  .cell[data-l="2"]{fill:#1F5DA0}
+  .cell[data-l="3"]{fill:#3789DE}
+  .cell[data-l="4"]{fill:#79C0FF}
+  .graph-foot{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem;font-size:.8125rem;color:var(--ink-faint)}
+  .scale{display:flex;align-items:center;gap:.4rem}
+  .scale i{width:10px;height:10px;border-radius:2px;display:block}
+
+  /* ---------- sections ---------- */
+  section{padding:clamp(3.5rem,9vh,6rem) 0;border-top:1px solid var(--hairline)}
+  h2{font:400 clamp(1.5rem,3.4vw,2rem)/1.2 var(--serif);letter-spacing:-.012em;margin:0 0 2.4rem}
+  .prose{max-width:var(--measure);color:var(--ink-soft)}
+  .prose p{margin:0 0 1.15rem}
+  .prose p:last-child{margin-bottom:0}
+
+  .work{list-style:none;margin:0;padding:0}
+  .work li{border-top:1px solid var(--hairline)}
+  .work li:first-child{border-top:0}
+  .work a.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem 2rem;align-items:baseline;padding:1.6rem 0;border:0;color:inherit}
+  .work a.row:hover .title{color:var(--blue-lit)}
+  .work a.row:hover .meta{color:var(--ink-soft)}
+  .title{font:400 1.25rem/1.3 var(--serif);color:var(--ink);letter-spacing:-.008em;transition:color .18s}
+  .desc{grid-column:1;color:var(--ink-soft);font-size:.9688rem;max-width:58ch;margin-top:.45rem}
+  .meta{grid-column:2;grid-row:1/span 2;display:flex;align-items:center;gap:1.1rem;color:var(--ink-faint);font-size:.875rem;white-space:nowrap;transition:color .18s}
+  .lang{display:inline-flex;align-items:center;gap:.45rem}
+  .lang i{width:8px;height:8px;border-radius:50%;display:block;background:var(--blue)}
+
+  .roles{list-style:none;margin:0;padding:0;max-width:820px}
+  .roles li{display:grid;grid-template-columns:minmax(0,1fr) 10rem;gap:.4rem 2rem;padding:1.5rem 0;border-top:1px solid var(--hairline)}
+  .roles li:first-child{border-top:0;padding-top:0}
+  .roles li.now .rank{color:var(--blue)}
+  .rank{font:400 1.125rem/1.35 var(--serif);color:var(--ink)}
+  .org{grid-column:1;color:var(--ink-soft);font-size:.9375rem}
+  .when{grid-column:2;grid-row:1/span 2;color:var(--ink-faint);font-size:.875rem;text-align:right}
+
+  .split{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:clamp(2rem,5vw,4.5rem);align-items:start}
+  .stack{margin:0;font-size:.9688rem}
+  .stack div{display:flex;justify-content:space-between;gap:1.5rem;padding:.72rem 0;border-top:1px solid var(--hairline)}
+  .stack div:first-child{border-top:0;padding-top:0}
+  .stack dt{color:var(--ink-faint)}
+  .stack dd{margin:0;color:var(--ink);text-align:right}
+
+  .contact h2{margin-bottom:1.6rem}
+  .contact .prose{margin-bottom:2.2rem}
+  .links{display:flex;flex-wrap:wrap;gap:.7rem}
+  .links a{border:1px solid var(--hairline-lit);border-radius:6px;padding:.62rem 1.15rem;color:var(--ink);font-size:.9375rem;background:var(--surface);transition:border-color .18s,color .18s,background .18s}
+  .links a:hover{border-color:var(--blue);color:var(--blue-lit);background:rgba(88,166,255,.06)}
+  .links a.primary{border-color:rgba(88,166,255,.45);color:var(--blue)}
+
+  footer{border-top:1px solid var(--hairline);padding:2.2rem 0 3rem;color:var(--ink-faint);font-size:.875rem}
+  footer .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+
+  /* ---------- detail panel ---------- */
+  .scrim{position:fixed;inset:0;z-index:20;background:rgba(4,6,10,.72);backdrop-filter:blur(6px);display:none}
+  .scrim.on{display:block}
+  .panel{
+    position:fixed;z-index:21;inset:auto 0 0 0;max-height:92vh;
+    background:var(--surface);border-top:1px solid var(--hairline-lit);
+    border-radius:14px 14px 0 0;display:none;flex-direction:column;
+    max-width:1080px;margin:0 auto;box-shadow:0 -24px 60px rgba(0,0,0,.5);
+  }
+  .panel.on{display:flex}
+  @media (min-width:900px){
+    .panel{inset:5vh 0 auto 0;max-height:90vh;border:1px solid var(--hairline-lit);border-radius:14px}
+  }
+  .panel-head{display:flex;align-items:flex-start;gap:1.1rem;padding:1.6rem clamp(1.25rem,4vw,2.25rem) 1.1rem}
+  .panel-head .crest{width:46px;height:46px}
+  .panel-head h3{font:400 1.375rem/1.25 var(--serif);margin:0 0 .25rem;letter-spacing:-.01em}
+  .panel-head p{margin:0;color:var(--ink-soft);font-size:.9375rem}
+  .close{margin-left:auto;background:none;border:1px solid var(--hairline-lit);border-radius:6px;color:var(--ink-soft);width:34px;height:34px;flex:none;cursor:pointer;font-size:1.1rem;line-height:1;transition:border-color .18s,color .18s}
+  .close:hover{border-color:var(--blue);color:var(--ink)}
+  .tabs{display:flex;gap:.25rem;padding:0 clamp(1.25rem,4vw,2.25rem);border-bottom:1px solid var(--hairline)}
+  .tabs button{
+    background:none;border:0;border-bottom:2px solid transparent;color:var(--ink-faint);
+    font:400 .9375rem/1 var(--sans);padding:.85rem .9rem;cursor:pointer;transition:color .18s,border-color .18s;
+  }
+  .tabs button:hover{color:var(--ink-soft)}
+  .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+  .panel-body{overflow-y:auto;padding:1.75rem clamp(1.25rem,4vw,2.25rem) 2.25rem;-webkit-overflow-scrolling:touch}
+  .tabpanel[hidden]{display:none}
+  .tabpanel h4{font:400 1.0625rem/1.3 var(--serif);color:var(--ink);margin:2rem 0 .9rem}
+  .tabpanel h4:first-child{margin-top:0}
+  .tabpanel p{color:var(--ink-soft);max-width:var(--measure);margin:0 0 1rem}
+  .tabpanel ul{color:var(--ink-soft);max-width:var(--measure);margin:0 0 1rem;padding-left:1.1rem}
+  .tabpanel li{margin-bottom:.4rem}
+
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--hairline);border:1px solid var(--hairline);border-radius:8px;overflow:hidden;margin:0 0 1.75rem}
+  .facts div{background:var(--surface-2);padding:1rem 1.1rem}
+  .facts dt{color:var(--ink-faint);font-size:.8125rem;margin-bottom:.3rem}
+  .facts dd{margin:0;color:var(--ink);font-size:1.0625rem;font-family:var(--serif)}
+
+  .divs{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:.9rem}
+  .divs li{display:flex;gap:.95rem;align-items:flex-start;background:var(--surface-2);border:1px solid var(--hairline);border-radius:8px;padding:1.05rem 1.1rem}
+  .divs svg{width:34px;height:34px;flex:none}
+  .divs strong{display:block;font:400 1.0625rem/1.3 var(--serif);color:var(--ink);margin-bottom:.2rem}
+  .divs span{color:var(--ink-soft);font-size:.875rem;line-height:1.5}
+
+  .album{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1rem}
+  .album figure{margin:0}
+  .album .shot{
+    aspect-ratio:16/10;border:1px solid var(--hairline);border-radius:8px;overflow:hidden;
+    background:var(--surface-2);display:flex;align-items:center;justify-content:center;
+  }
+  .album .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .album .shot svg{width:46px;height:46px;opacity:.5}
+  .album figcaption{color:var(--ink-soft);font-size:.875rem;margin-top:.55rem}
+  .note{font-size:.875rem;color:var(--ink-faint);border-left:2px solid var(--hairline-lit);padding-left:.9rem;margin-top:1.75rem;max-width:var(--measure)}
+
+  @media (max-width:760px){
+    .bar nav{display:none}
+    .split{grid-template-columns:1fr}
+    .work a.row,.roles li{grid-template-columns:1fr}
+    .meta{grid-column:1;grid-row:auto;margin-top:.7rem}
+    .when{grid-column:1;grid-row:auto;text-align:left;margin-top:.35rem}
+    .posting{grid-template-columns:auto minmax(0,1fr);gap:.9rem 1.1rem}
+    .posting .open{grid-column:1/-1;margin-top:.9rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- reusable insignia -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-crest" viewBox="0 0 48 48">
+      <path d="M24 3l17 6v15c0 10.5-7 18.5-17 21C14 42.5 7 34.5 7 24V9l17-6z" fill="#0F1B2B" stroke="#58A6FF" stroke-width="1.6"/>
+      <path d="M24 12l2.6 5.6 6 .8-4.4 4.3 1.1 6.1L24 26l-5.3 2.8 1.1-6.1-4.4-4.3 6-.8L24 12z" fill="#79C0FF"/>
+      <path d="M14 33h20M16.5 36.5h15" stroke="#58A6FF" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
+    </symbol>
+    <symbol id="i-ground" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <path d="M8 21l9-9 9 9" fill="none" stroke="#79C0FF" stroke-width="2" stroke-linecap="round"/>
+      <path d="M8 26l9-9 9 9" fill="none" stroke="#3789DE" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-air" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <path d="M17 8l3 8h7l-6 4 2 7-6-4.5L11 27l2-7-6-4h7l3-8z" fill="#79C0FF"/>
+    </symbol>
+    <symbol id="i-navy" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <path d="M17 9v16M11 13h12M9 21c1.5 4 4.5 6 8 6s6.5-2 8-6" fill="none" stroke="#79C0FF" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-police" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <path d="M17 8l7 2.5v7c0 4.6-3 8-7 9.5-4-1.5-7-4.9-7-9.5v-7L17 8z" fill="none" stroke="#79C0FF" stroke-width="1.8"/>
+      <path d="M13.5 17.5l2.5 2.5 4.5-5" fill="none" stroke="#79C0FF" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-special" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <path d="M10 24l14-14M12 10l12 14" fill="none" stroke="#79C0FF" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="17" cy="17" r="3.4" fill="none" stroke="#3789DE" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="i-training" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="15.2" fill="#111F31" stroke="#2B3949"/>
+      <circle cx="17" cy="17" r="8.5" fill="none" stroke="#79C0FF" stroke-width="1.7"/>
+      <circle cx="17" cy="17" r="3.6" fill="none" stroke="#3789DE" stroke-width="1.7"/>
+      <circle cx="17" cy="17" r="1" fill="#79C0FF"/>
+    </symbol>
+    <symbol id="i-shot" viewBox="0 0 48 48">
+      <rect x="5" y="9" width="38" height="30" rx="3" fill="none" stroke="#3789DE" stroke-width="1.6"/>
+      <circle cx="16" cy="19" r="3.2" fill="#3789DE"/>
+      <path d="M5 33l11-9 8 6 7-5 12 8" fill="none" stroke="#3789DE" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="bar">
+  <div class="wrap">
+    <a class="mark" href="#top"><svg><use href="#i-crest"/></svg>Your Name</a>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="#command">Command</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap" id="top">
+  <header class="hero">
+    <p class="status"><span class="dot"></span>Open to team and development work</p>
+    <h1>I build worlds, and I run the people inside them.</h1>
+    <p class="lede">Roblox and Minecraft developer based in Phnom Penh. I design military roleplay systems in Roblox Studio and build large-scale Minecraft servers — and I currently serve as <em>Minister of National Defence</em> for Cambodia Army Roleplay.</p>
+
+    <button class="posting" id="openPosting" aria-haspopup="dialog">
+      <svg class="crest" aria-hidden="true"><use href="#i-crest"/></svg>
+      <span>
+        <span class="who">Minister of National Defence</span>
+        <span class="where">Cambodia Army Roleplay — current posting</span>
+      </span>
+      <span class="open">See what I'm working on
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+
+    <div class="graph">
+      <div class="graph-scroll">
+        <svg id="grid" role="img" aria-label="A year of building and hosting activity, shown as a grid of squares."></svg>
+      </div>
+      <div class="graph-foot">
+        <span>A year of building, testing and hosting</span>
+        <span class="scale">Quiet
+          <i style="background:#111B27"></i><i style="background:#14355C"></i><i style="background:#1F5DA0"></i><i style="background:#3789DE"></i><i style="background:#79C0FF"></i>
+          Busy</span>
+      </div>
+    </div>
+  </header>
+</div>
+
+<div class="wrap">
+  <section id="projects">
+    <h2>What I've built</h2>
+    <ul class="work">
+      <li><a class="row" href="#">
+        <span class="title">Military roleplay base</span>
+        <span class="desc">A full training facility with checkpoints, rank-gated doors, armoury kits and a parade ground. Scripted in Luau, built for 40 players at once without dropping frames.</span>
+        <span class="meta"><span class="lang"><i style="background:#58A6FF"></i>Roblox Studio</span></span>
+      </a></li>
+      <li><a class="row" href="#">
+        <span class="title">Rank and roster system</span>
+        <span class="desc">Group-rank checks, promotion logs and an in-game roster board, so officers can manage the unit without leaving the server.</span>
+        <span class="meta"><span class="lang"><i style="background:#8CC6FF"></i>Luau</span></span>
+      </a></li>
+      <li><a class="row" href="#">
+        <span class="title">Minecraft survival server</span>
+        <span class="desc">A survival world I built and ran end to end: spawn city, plugin setup, permissions, and a staff team handling day-to-day moderation.</span>
+        <span class="meta"><span class="lang"><i style="background:#3DDC84"></i>Minecraft Java</span></span>
+      </a></li>
+      <li><a class="row" href="#">
+        <span class="title">Uniforms and insignia</span>
+        <span class="desc">Custom shirts, decals and rank patches designed to keep every unit visually consistent from private to high command.</span>
+        <span class="meta"><span class="lang"><i style="background:#A371F7"></i>Design</span></span>
+      </a></li>
+    </ul>
+  </section>
+
+  <section id="command">
+    <h2>Command experience</h2>
+    <ul class="roles">
+      <li class="now">
+        <span class="rank">Minister of National Defence</span>
+        <span class="org">Cambodia Army Roleplay — leading the defence ministry, setting policy, overseeing officers and keeping the branches coordinated.</span>
+        <span class="when">Current</span>
+      </li>
+      <li>
+        <span class="rank">High command</span>
+        <span class="org">Earlier military roleplay groups — running training sessions, approving promotions and handling discipline.</span>
+        <span class="when">Add dates</span>
+      </li>
+      <li>
+        <span class="rank">Officer</span>
+        <span class="org">Led squads in operations and events, and trained new recruits through the basic course.</span>
+        <span class="when">Add dates</span>
+      </li>
+    </ul>
+  </section>
+
+  <section id="about">
+    <h2>About</h2>
+    <div class="split">
+      <div class="prose">
+        <p>I'm not a software engineer. I'm a builder and an organiser — most of what I know came from opening Roblox Studio at night and figuring out why a door wouldn't respect someone's rank.</p>
+        <p>The building and the leading turned out to be the same skill. A base only works if people can find the armoury; a unit only works if people know who to report to. Both are design problems.</p>
+        <p>Right now I'm focused on running the defence ministry well: clear ranks, real training, and events people actually want to show up for.</p>
+      </div>
+      <dl class="stack">
+        <div><dt>Platforms</dt><dd>Roblox, Minecraft</dd></div>
+        <div><dt>Building</dt><dd>Studio, Blender</dd></div>
+        <div><dt>Scripting</dt><dd>Luau</dd></div>
+        <div><dt>Community</dt><dd>Discord, moderation</dd></div>
+        <div><dt>Leading</dt><dd>Training, promotions, events</dd></div>
+        <div><dt>Based in</dt><dd>Phnom Penh</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2>Get in touch</h2>
+    <div class="prose">
+      <p>Recruiting builders, setting up a new group, or need someone to run a unit properly? Send me a message.</p>
+    </div>
+    <div class="links">
+      <a class="primary" href="#">Discord</a>
+      <a href="#">Roblox profile</a>
+      <a href="#">Group page</a>
+      <a href="mailto:you@example.com">Email</a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Your Name</span>
+    <span>Built by hand, 2026</span>
+  </div>
+</footer>
+
+<!-- ---------- current posting detail ---------- -->
+<div class="scrim" id="scrim"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" tabindex="-1">
+  <div class="panel-head">
+    <svg class="crest" aria-hidden="true"><use href="#i-crest"/></svg>
+    <div>
+      <h3 id="panelTitle">Minister of National Defence</h3>
+      <p>Cambodia Army Roleplay · Roblox · current</p>
+    </div>
+    <button class="close" id="closePanel" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Posting details">
+    <button role="tab" id="tab-1" aria-controls="tp-1" aria-selected="true">Overview</button>
+    <button role="tab" id="tab-2" aria-controls="tp-2" aria-selected="false">Divisions</button>
+    <button role="tab" id="tab-3" aria-controls="tp-3" aria-selected="false">Gallery</button>
+  </div>
+
+  <div class="panel-body">
+    <div class="tabpanel" id="tp-1" role="tabpanel" aria-labelledby="tab-1">
+      <dl class="facts">
+        <div><dt>Appointed</dt><dd>Add date</dd></div>
+        <div><dt>Reports to</dt><dd>Add authority</dd></div>
+        <div><dt>Branches</dt><dd>Six</dd></div>
+        <div><dt>Personnel</dt><dd>Add number</dd></div>
+      </dl>
+      <h4>The role</h4>
+      <p>I run the defence ministry: setting the rules the branches operate under, appointing and reviewing officers, approving operations, and making sure the whole force pulls in one direction instead of six.</p>
+      <h4>What I'm working on now</h4>
+      <ul>
+        <li>Rewriting the promotion ladder so every rank has a clear requirement instead of a judgement call.</li>
+        <li>Standing up a weekly training cycle with a fixed schedule officers can plan around.</li>
+        <li>Building the new headquarters map in Roblox Studio — briefing room, armoury, vehicle bay.</li>
+        <li>Bringing uniforms and insignia across all branches into one consistent set.</li>
+        <li>Writing the operations handbook so joint events run the same way every time.</li>
+      </ul>
+      <h4>How it's going</h4>
+      <p>Attendance at training is the number I watch. Clear requirements and a schedule people can rely on move it more than anything else I've tried.</p>
+      <p class="note">Swap the dates, personnel count and these bullet points for your real ones. Everything here is plain text near the bottom of the file.</p>
+    </div>
+
+    <div class="tabpanel" id="tp-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+      <p>The branches under the ministry. Rename them to match your group's actual structure.</p>
+      <ul class="divs">
+        <li><svg aria-hidden="true"><use href="#i-ground"/></svg><div><strong>Ground Forces</strong><span>Main infantry branch. Patrols, checkpoints and the bulk of training intake.</span></div></li>
+        <li><svg aria-hidden="true"><use href="#i-air"/></svg><div><strong>Air Force</strong><span>Air support and transport for joint operations and long-range events.</span></div></li>
+        <li><svg aria-hidden="true"><use href="#i-navy"/></svg><div><strong>Navy</strong><span>Coastal and river operations, plus escort duty during large events.</span></div></li>
+        <li><svg aria-hidden="true"><use href="#i-police"/></svg><div><strong>Military Police</strong><span>Discipline, base security and handling reports of rule-breaking.</span></div></li>
+        <li><svg aria-hidden="true"><use href="#i-special"/></svg><div><strong>Special Forces</strong><span>Selected operators for high-difficulty missions. Entry by assessment only.</span></div></li>
+        <li><svg aria-hidden="true"><use href="#i-training"/></svg><div><strong>Training Command</strong><span>Runs the basic course, officer school and the weekly training cycle.</span></div></li>
+      </ul>
+      <p class="note">Each icon is drawn in the page itself, so they load instantly and match the palette. Ask me to redraw any of them — a different shape, a branch you actually have, or your real insignia.</p>
+    </div>
+
+    <div class="tabpanel" id="tp-3" role="tabpanel" aria-labelledby="tab-3" hidden>
+      <p>Screenshots from the group and the maps I've built.</p>
+      <ul class="album">
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Headquarters, main gate</figcaption></figure></li>
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Parade formation, weekly muster</figcaption></figure></li>
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Armoury and kit selection</figcaption></figure></li>
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Training course, obstacle run</figcaption></figure></li>
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Joint operation with the Air Force</figcaption></figure></li>
+        <li><figure><div class="shot"><svg aria-hidden="true"><use href="#i-shot"/></svg></div><figcaption>Officer promotion ceremony</figcaption></figure></li>
+      </ul>
+      <p class="note">These are empty frames waiting for your screenshots. Send me the images and I'll embed them directly into the page so they work everywhere, or replace each frame's contents with an image tag yourself.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---- activity grid ---- */
+  var WEEKS=52, DAYS=7, S=12, G=3;
+  var svg=document.getElementById('grid');
+  var w=WEEKS*(S+G)-G, h=DAYS*(S+G)-G;
+  svg.setAttribute('viewBox','0 0 '+w+' '+h);
+  svg.setAttribute('width',w);
+  var seed=20260918;
+  function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var frag=document.createDocumentFragment();
+  for(var x=0;x<WEEKS;x++){
+    var season=0.55+0.45*Math.sin((x/WEEKS)*Math.PI*2-1.1);
+    for(var y=0;y<DAYS;y++){
+      var weekend=(y===0||y===6)?1.15:0.85;
+      var v=rnd()*season*weekend;
+      var l = v>0.62?4 : v>0.45?3 : v>0.28?2 : v>0.13?1 : 0;
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('class','cell'); r.setAttribute('data-l',l);
+      r.setAttribute('x',x*(S+G)); r.setAttribute('y',y*(S+G));
+      r.setAttribute('width',S); r.setAttribute('height',S); r.setAttribute('rx',2.5);
+      if(!reduce){ r.style.opacity='0'; r.style.transition='opacity .5s ease'; r.style.transitionDelay=(x*0.014)+'s'; }
+      frag.appendChild(r);
+    }
+  }
+  svg.appendChild(frag);
+  if(!reduce){
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      var c=svg.querySelectorAll('.cell');
+      for(var i=0;i<c.length;i++) c[i].style.opacity='1';
+    });});
+  }
+
+  /* ---- detail panel ---- */
+  var panel=document.getElementById('panel'),
+      scrim=document.getElementById('scrim'),
+      opener=document.getElementById('openPosting'),
+      closer=document.getElementById('closePanel');
+
+  function open(){
+    panel.classList.add('on'); scrim.classList.add('on');
+    document.body.classList.add('locked');
+    opener.setAttribute('aria-expanded','true');
+    panel.focus();
+  }
+  function close(){
+    panel.classList.remove('on'); scrim.classList.remove('on');
+    document.body.classList.remove('locked');
+    opener.setAttribute('aria-expanded','false');
+    opener.focus();
+  }
+  opener.addEventListener('click',open);
+  closer.addEventListener('click',close);
+  scrim.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && panel.classList.contains('on')) close();
+  });
+
+  /* ---- tabs ---- */
+  var tabs=[].slice.call(panel.querySelectorAll('[role="tab"]'));
+  function select(i){
+    tabs.forEach(function(t,j){
+      t.setAttribute('aria-selected', j===i?'true':'false');
+      t.tabIndex = j===i?0:-1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = j!==i;
+    });
+    panel.querySelector('.panel-body').scrollTop=0;
+  }
+  tabs.forEach(function(t,i){
+    t.tabIndex = i===0?0:-1;
+    t.addEventListener('click',function(){ select(i); });
+    t.addEventListener('keydown',function(e){
+      var n = e.key==='ArrowRight'?i+1 : e.key==='ArrowLeft'?i-1 : -1;
+      if(n>=0 && n<tabs.length){ e.preventDefault(); select(n); tabs[n].focus(); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
