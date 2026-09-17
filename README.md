@@ -2,7 +2,7 @@
 
 A personal portfolio site dark, blue, minimal, built to look at home next to a GitHub profile.
 
-**Live site:** add your GitHub Pages link here once it's published (e.g. `https://m0onus.github.io/portfolio/`)
+**Live site:** `https://m0onus.github.io/portfolio/`
 
 ## About
 
